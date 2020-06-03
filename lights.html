@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Jozef Dvorský - creatingo.com">
+
+    <title>SYMBIOT4 Lights - Bootstrap 4 theme</title>
+
+    <!-- Additional Stylesheets -->
+    <link type="text/css" rel="stylesheet" href="../assets/css/tail.datetime-default-blue.css" />
+    <script type="text/javascript" src="../assets/js/tail.datetime-full.js"></script>
+
+
+
+    <!-- Bootstrap core CSS with custom theme variables + Additional theme styles -->
+    <!--<link href="../assets/css/sof.css" rel="stylesheet">-->
+    <link href="../assets/css/iot-theme-bundle.min.css" rel="stylesheet">
+
+    <!-- Firebase Config -->
+    <script src="https://www.gstatic.com/firebasejs/5.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.6.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.6.0/firebase-database.js"></script>
+    <script src="./assets/js/db-config.js"></script>
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div id="iot-preloader">
+        <div class="center-preloader d-flex align-items-center">
+            <div class="spinners">
+                <div class="spinner01"></div>
+                <div class="spinner02"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE Light MODAL -->
+    <div id="modal-manageLight" class="modal centered fade">
+        <div class="modal-dialog modal-LightsManagement" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="manageLightModalTitle">Create New Output</h4>
+                </div>
+                <div class="modal-body d-flex flex-row justify-content-start">
+                    <form class="p-2" id="manageLightForm">
+                        <div class="form-group row">
+                            <label for="name" class="col-12 col-form-label" style="color: #08a1f3;">Name *
+                                <input id="name" class="form-control custom-focus" type="text" autofocus required>
+                            </label>
+                            <label for="outputPin" class="col-12 col-form-label" style="color: #08a1f3;">Output Pin *
+                                <select id="outputPin" class="form-control custom-focus" previousVal=""
+                                    onchange="disableUsedPin(this.id)" required>
+                                </select>
+                            </label>
+                            <label for="btnPin" class="col-12 col-form-label" style="color: #08a1f3;">Button Pin
+                                <select id="btnPin" class="form-control custom-focus" previousVal=""
+                                    onchange="disableUsedPin(this.id)">
+                                </select>
+                            </label>
+                            <label for="initialState" class="col-12 col-form-label" style="color: #08a1f3;">Initial State *
+                                <select id="initialState" class="form-control custom-focus" required>
+                                    <option value="OFF">OFF</option>
+                                    <option value="ON">ON</option>
+                                </select>
+                            </label>
+                            <label for="powerConsumption" class="col-12 col-form-label" style="color: #08a1f3;">Power Consumption
+                                <input id="powerConsumption" class="form-control custom-focus" type="number" min="0" step="1">
+                            </label>
+                            <label for="voltage" class="col-12 col-form-label" style="color: #08a1f3;">Voltage
+                                <input id="voltage" class="form-control custom-focus" type="number" min="0" step="1">
+                            </label>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-4 mt-3 mb-2 text-center">
+                                <button type="submit" id="submitBtn" class="btn btn-primary btn-block"></button>
+                            </div>
+                            <div class="col-4 mt-3 mb-2 text-center">
+                                <button type="button" class="btn btn-secondary btn-block" onclick="closeModal('modal-manageLight', 'manageLightForm')">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer list MODAL -->
+    <div id="modal-listTimers" class="modal fade" style="padding:1em; margin-top: 3rem;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="listTimer">Timers List</h4>
+                </div>
+                <div class="modal-body ml-2 mr-2">
+                    <div id="timersList">
+                        <!-- We will print the timers cards here-->
+                    </div>
+                    <div id="timersListButtons">
+                        <div class="mt-3 mb-2 text-center">
+                            <button type="button" class="btn btn-primary btn-block" id="addNewTimer" onclick="showManageTimerModal(this.getAttribute('elet-target'), 'createBtn')">Add New Timer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Timer MODAL -->
+    <div id="modal-manageTimer" class="modal fade" style="padding:1em; margin-top: 3rem;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modal-manageTimerTitle">Create New Timer</h4>
+                </div>
+
+                <div class="modal-body d-flex flex-row justify-content-start">
+                    <form class="p-2" id="manageTimerForm">
+                        <div class="form-group row" id="timerContent">
+                            <!-- We will print the timer content form here -->
+                        </div>
+
+                        <div class="form-group row mb-1">
+                            <div class="col-4 text-center">
+                                <button type="submit" id="setBtn" class="btn btn-primary btn-block">Set</button>
+                            </div>
+                            <div class="col-4 text-center" style="margin-right: 0em;float: right;">
+                                <button type="button" class="btn btn-secondary btn-block" onclick="closeModal('modal-manageTimer', 'manageTimerForm');">Cancel</button>
+                            </div>
+                        </div>
+                        <h7 id="timerFormProblem" style="color: red; display: none; "></h7>
+                        <!--338.863px    width: 441.6px;"-->
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Modal -->
+
+    <!-- Arming Modal -->
+    <!-- Alarm Modal -->
+
+    <!-- Wrapper START -->
+    <div id="wrapper" class="hidden">
+        <!-- Top navbar START -->
+        <nav class="navbar navbar-expand fixed-top d-flex flex-row justify-content-start">
+            <div class="d-none d-lg-block">
+                <form>
+                    <div id="menu-minifier">
+                        <label>
+                            <svg width="32" height="32" viewBox="0 0 32 32">
+                                <rect x="2" y="8" width="4" height="3" class="menu-dots"></rect>
+                                <rect x="2" y="15" width="4" height="3" class="menu-dots"></rect>
+                                <rect x="2" y="22" width="4" height="3" class="menu-dots"></rect>
+                                <rect x="8" y="8" width="21" height="3" class="menu-lines"></rect>
+                                <rect x="8" y="15" width="21" height="3" class="menu-lines"></rect>
+                                <rect x="8" y="22" width="21" height="3" class="menu-lines"></rect>
+                            </svg>
+                            <input id="minifier" type="checkbox">
+                        </label>
+                        <div class="info-holder info-rb">
+                            <div data-toggle="popover-all" data-content="Checkbox element using localStorage to remember the last status." data-original-title="Side menu narrowing" data-placement="right"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <a class="navbar-brand px-lg-3 px-1 mr-0" href="#">SMART FAMILY</a>
+            <div class="ml-auto">
+                <div class="navbar-nav flex-row navbar-icons">
+                    <div class="nav-item">
+                        <button id="alerts-toggler" class="btn btn-link nav-link" title="Alerts" type="button" data-alerts="3" data-toggle="modal" data-target="#alertsModal">
+                            <svg class="icon-sprite">
+                                <use xlink:href="./assets/images/icons-sprite.svg#alert" />
+                                <svg class="text-danger">
+                                    <use class="icon-dot" xlink:href="./assets/images/icons-sprite.svg#icon-dot" />
+                                    </svg>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="user-menu" class="nav-item dropdown">
+                        <button class="btn btn-link nav-link dropdown-toggle" title="User" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <svg class="icon-sprite">
+                                <use xlink:href="./assets/images/icons-sprite.svg#user" /></svg>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <!--<a class="dropdown-item" href="profile.html">Profile</a>-->
+                            <a class="dropdown-item">Profile</a>
+                            <div class="dropdown-divider"></div>
+                            <a id="logout" class="dropdown-item" href="#">Logout</a>
+                        </div>
+                    </div>
+                    <div class="nav-item d-lg-none">
+                        <button id="sidebar-toggler" type="button" class="btn btn-link nav-link" data-toggle="offcanvas">
+                            <svg class="icon-sprite">
+                                <use xlink:href="./assets/images/icons-sprite.svg#menu" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- Top navbar END -->
+        <!-- wrapper-offcanvas START -->
+        <div class="wrapper-offcanvas">
+            <!-- row-offcanvas START -->
+            <div class="row-offcanvas row-offcanvas-left">
+                <!-- Side menu START -->
+                <div id="sidebar" class="sidebar-offcanvas">
+                    <ul class="nav flex-column nav-sidebar">
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="index.html">
+                                <svg class="icon-sprite">
+                                    <use xlink:href="./assets/images/icons-sprite.svg#home" /></svg> Home
+                            </a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link active" href="lights.html">
+                                <svg class="icon-sprite">
+                                    <use xlink:href="./assets/images/icons-sprite.svg#bulb-eco" /></svg> Lights
+                            </a>
+                        </li>
+                        <!-- Cameras, Appliances, climate nav bar options-->
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">
+                                <svg class="icon-sprite">
+                                    <use xlink:href="./assets/images/icons-sprite.svg#settings" /></svg> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Side menu END -->
+                <!-- Main content START -->
+                <div id="main">
+                    <div class="container-fluid">
+                        <!-- Interior lights START -->
+                        <div class="row" data-unit-group="switch-lights-in">
+                            <!-- Control All Card START -->
+                            <div class="col-sm-12 col-md-6 col-xl-4" id="allOnOff-InteriorLight">
+                                <!-- ON/OFF all interior lights  START -->
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Interior Lights</h3>
+                                    </div>
+                                    <hr class="my-0">
+                                    <div class="card-body">
+                                        <div class="lights-controls d-flex flex-row justify-content-start" id="allOnOff-InteriorLightDOM" ref="Lights/Interior_Lights/" data-controls="switch-lights-in">
+                                            <button data-action="all-on" type="button" class="btn btn-primary lights-control" onclick="updateGroupSwitchsStatesLightsJS(this.parentElement.getAttribute('ref'), this.getAttribute('data-action'))">All
+                                                <strong>ON</strong>
+                                            </button>
+                                            <button data-action="all-off" type="button" class="btn btn-secondary lights-control ml-1" onclick="updateGroupSwitchsStatesLightsJS(this.parentElement.getAttribute('ref'), this.getAttribute('data-action'))">All
+                                                <strong>OFF</strong>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ON/OFF all interior lights  END -->
+                            </div>
+                            <!-- We will print the interior light switchers here with the javascript-->
+                        </div>
+                        <!-- Interior lights END -->
+
+                        <!-- The interior lights chart must be here -->
+
+                        <hr class="my-2">
+                        <!-- Exterior lights START -->
+                        <div class="row" data-unit-group="switch-lights-ex">
+                            <!-- Control All Card START -->
+                            <div class="col-sm-12 col-md-6 col-xl-4" id="allOnOff-ExteriorLight">
+                                <!-- ON/OFF all exterior lights  START -->
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Exterior Lights</h3>
+                                    </div>
+                                    <hr class="my-0">
+                                    <div class="card-body">
+                                        <div class="lights-controls d-flex flex-row justify-content-start" id="allOnOff-ExteriorLightDOM" ref="Lights/Exterior_Lights/" data-controls="switch-lights-ex">
+                                            <button data-action="all-on" type="button" class="btn btn-primary lights-control" onclick="updateGroupSwitchsStatesLightsJS(this.parentElement.getAttribute('ref'), this.getAttribute('data-action'))">All
+                                                <strong>ON</strong>
+                                            </button>
+                                            <button data-action="all-off" type="button" class="btn btn-secondary lights-control ml-1" onclick="updateGroupSwitchsStatesLightsJS(this.parentElement.getAttribute('ref'), this.getAttribute('data-action'))">All
+                                                <strong>OFF</strong>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ON/OFF all exterior lights  END -->
+                            </div>
+                            <!-- We will print the exterior light switchers here with the javascript-->
+                        </div>
+                        <!-- Exterior lights END -->
+                    </div>
+                    <!-- Main content overlay when side menu appears  -->
+                    <div class="cover-offcanvas" data-toggle="offcanvas"></div>
+                </div>
+                <!-- Main content END -->
+            </div>
+            <!-- row-offcanvas END -->
+        </div>
+        <!-- wrapper-offcanvas END -->
+    </div>
+    <!-- Wrapper END -->
+
+    <!-- FAB button - bottom right on large screens -->
+    <button id="info-toggler" type="button" class="btn btn-primary btn-fab btn-fixed-br d-none d-lg-inline-block">
+        <svg class="icon-sprite">
+            <use xlink:href="../assets/images/icons-sprite.svg#info" /></svg>
+    </button>
+
+    <!-- SVG ../assets - not visible -->
+    <svg id="svg-tool" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <defs>
+            <style type="text/css">
+                .glow circle {
+                    fill: url(#radial-glow)
+                }
+            </style>
+            <filter id="blur" x="-25%" y="-25%" width="150%" height="150%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+            </filter>
+            <radialGradient id="radial-glow" fx="50%" fy="50%" r="50%">
+                <stop offset="0" stop-color="#0F9CE6" stop-opacity="1" />
+                <stop offset="1" stop-color="#0F9CE6" stop-opacity="0" />
+            </radialGradient>
+        </defs>
+    </svg>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap bundle -->
+    <script src="../assets/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Cross browser support for SVG icon sprites -->
+    <script src="../assets/js/svg4everybody.min.js"></script>
+
+    <!-- jQuery countdown timer plugin (Exit modal, Garage doors, Washing machine) -->
+    <script src="./assets/js/iot-timer.min.js"></script>
+
+    <!-- jQuery range-slider plugin (Dimmers, Fridge temperature) -->
+    <script src="../assets/js/iot-range-slider.min.js"></script>
+
+    <!-- Basic theme functionality (arming, garage doors, switches ...) - using jQuery -->
+    <script src="../assets/js/iot-functions.min.js"></script>
+
+    <!-- Chartist.js library - NO jQuery dependency -->
+    <script src="../assets/js/chartist.min.js"></script>
+
+    <!-- Chartist.js pugin - Legend -->
+    <script src="../assets/js/chartist-legend.min.js"></script>
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="./assets/js/lights.js"></script>
+
+    <!-- Date Time picker -->
+    <script src="./assets/js/rolldate.js"></script>
+
+
+    <script>
+        $(document).ready(function() {
+            // Get checkbox statuses from localStorage if available (IE)
+            if (localStorage) {
+
+                // Menu minifier status (Contract/expand side menu on large screens)
+                var checkboxValue = localStorage.getItem('minifier');
+
+                if (checkboxValue === 'true') {
+                    $('#sidebar,#menu-minifier').addClass('mini');
+                    $('#minifier').prop('checked', true);
+
+                } else {
+
+                    if ($('#minifier').is(':checked')) {
+                        $('#sidebar,#menu-minifier').addClass('mini');
+                        $('#minifier').prop('checked', true);
+                    } else {
+                        $('#sidebar,#menu-minifier').removeClass('mini');
+                        $('#minifier').prop('checked', false);
+                    }
+                }
+
+                /*
+                                // Switch statuses
+                                var switchValues = JSON.parse(localStorage.getItem('switchValues')) || {};
+
+                                $.each(switchValues, function(key, value) {
+
+                                    // Apply only if element is included on the page
+                                    if ($('[data-unit="' + key + '"]').length) {
+
+                                        if (value === true) {
+
+                                            // Apply appearance of the "unit" and checkbox element
+                                            $('[data-unit="' + key + '"]').addClass("active");
+                                            $("#" + key).prop('checked', true);
+                                            $("#" + key).closest("label").addClass("checked");
+
+                                        } else {
+                                            $('[data-unit="' + key + '"]').removeClass("active");
+                                            $("#" + key).prop('checked', false);
+                                            $("#" + key).closest("label").removeClass("checked");
+                                        }
+                                    }
+                                });
+                
+
+                                // Range Slider values
+                                var rangeValues = JSON.parse(localStorage.getItem('rangeValues')) || {};
+
+                                $.each(rangeValues, function(key, value) {
+
+                                    // Apply only if element is included on the page
+                                    if ($('[data-rangeslider="' + key + '"]').length) {
+                                        // Update Range slider
+                                        $('[data-rangeslider="' + key + '"] input[type="range"]').val(value);
+                                        $('[data-rangeslider="' + key + '"] .range-output').html(value);
+                                    }
+                                });
+                                */
+            }
+
+
+            // Contract/expand side menu on click. (only large screens)
+            $('#minifier').click(function() {
+
+                $('#sidebar,#menu-minifier').toggleClass('mini');
+
+                // Save side menu status to localStorage if available (IE)
+                if (localStorage) {
+                    checkboxValue = this.checked;
+                    localStorage.setItem('minifier', checkboxValue);
+                }
+
+            });
+
+
+            // Side menu toogler for medium and small screens
+            $('[data-toggle="offcanvas"]').click(function() {
+                $('.row-offcanvas').toggleClass('active');
+            });
+
+            /*
+            // Switch (checkbox element) toogler
+            $('.switch input[type="checkbox"]').on("change", function(t) {
+
+                // Check the time between changes to prevert Android native browser execute twice
+                // If you dont need support for Android native browser - just call "switchSingle" function
+                if (this.last) {
+
+                    this.diff = t.timeStamp - this.last;
+
+                    // Don't execute if the time between changes is too short (less than 250ms) - Android native browser "twice bug"
+                    // The real time between two human taps/clicks is usually much more than 250ms"
+                    if (this.diff > 250) {
+
+                        this.last = t.timeStamp;
+
+                        iot.switchSingle(this.id, this.checked);
+
+                    } else {
+                        return false;
+                    }
+
+                } else {
+
+                    // First attempt on this switch element
+                    this.last = t.timeStamp;
+
+                    iot.switchSingle(this.id, this.checked);
+
+                }
+            });
+
+            // All ON/OFF controls
+            $('.lights-control').click(function() {
+
+                var target = $(this).closest('.lights-controls').data('controls');
+                var action = $(this).data('action');
+
+                iot.switchGroup(target, action);
+            });
+            */
+
+            // Reposition to center when a modal is shown
+            $('.modal.centered').on('show.bs.modal', iot.centerModal);
+
+
+            // Alerts "Close" callback - hide modal and alert indicator dot when user closes all alerts
+            $('#alertsModal .alert').on('close.bs.alert', function() {
+                var sum = $('#alerts-toggler').attr('data-alerts');
+                sum = sum - 1;
+                $('#alerts-toggler').attr('data-alerts', sum);
+
+                if (sum === 0) {
+                    $('#alertsModal').modal('hide');
+                    $('#alerts-toggler').attr('data-toggle', 'none');
+
+                }
+
+            });
+
+
+            // Show/hide tips (popovers) - FAB button (right bottom on large screens)
+            $('#info-toggler').click(function() {
+
+                if ($('body').hasClass('info-active')) {
+                    $('[data-toggle="popover-all"]').popover('hide');
+                    $('body').removeClass('info-active');
+                } else {
+                    $('[data-toggle="popover-all"]').popover('show');
+                    $('body').addClass('info-active');
+                }
+            });
+
+            // Hide tips (popovers) by clicking outside
+            $('body').on('click', function(pop) {
+
+                if (pop.target.id !== 'info-toggler' && $('body').hasClass('info-active')) {
+                    $('[data-toggle="popover-all"]').popover('hide');
+                    $('body').removeClass('info-active');
+                }
+
+            });
+
+            /*
+            // Data binding for numeric representation of range slider
+            $(document).on('input', 'input[type="range"]', function() {
+                $('[data-rangeslider="' + this.id + '"] .range-output').html(this.value);
+            });
+
+            // Bar Chart initialization settings - Chartist.js
+
+            var data01 = {
+                // Labels array that can contain any sort of values
+                labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                // Series array that contains series objects or in this case series data arrays
+                series: [{
+                    "name": "Kitchen",
+                    "data": [7, 4, 6, 5, 6, 3, 8]
+                }, {
+                    "name": "Dining room",
+                    "data": [3, 1, 1, 2, 1, 2, 2]
+                }, {
+                    "name": "Living room",
+                    "data": [6, 2, 3, 4, 2, 5, 7]
+                }, {
+                    "name": "Bedroom",
+                    "data": [2, 1, 1, 1, 1, 2, 3]
+                }, {
+                    "name": "Bathroom",
+                    "data": [6, 5, 6, 7, 5, 12, 9]
+                }]
+            };
+
+            var options01 = {
+                axisY: {
+                    labelInterpolationFnc: function(value) {
+                        return value + 'h'
+                    }
+                },
+                height: 240,
+                high: 14,
+                low: 0,
+                scaleMinSpace: 6,
+                onlyInteger: false,
+                referenceValue: 0,
+                seriesBarDistance: 8,
+                plugins: [
+                    Chartist.plugins.legend({
+                        position: 'bottom'
+                    })
+                ]
+            };
+
+            var responsive_steps01 = [
+                // Show only every second label
+                ['screen and (max-width: 768px)', {
+                    axisX: {
+                        labelInterpolationFnc: function skipLabels(value, index, labels) {
+                            return index % 2 === 0 ? value : null;
+                        }
+                    }
+                }],
+                // Show only every fourth label
+                ['screen and (max-width: 480px)', {
+                    axisX: {
+                        labelInterpolationFnc: function skipLabels(value, index, labels) {
+                            return index % 4 === 0 ? value : null;
+                        }
+                    }
+                }]
+            ];
+
+            // Pie Chart initialization settings - Chartist.js
+            var data02 = {
+                labels: ['Kitchen', 'Dining room', 'Living room', 'Bedroom', 'Bathroom'],
+                series: [28, 12, 20, 9, 31]
+            };
+
+            var options02 = {
+                chartPadding: 50,
+                donut: true,
+                donutWidth: 12,
+                labelOffset: 20,
+                labelDirection: 'explode',
+                labelInterpolationFnc: function(value, idx) {
+                    return data02.series[idx] + '%'
+                }
+            };
+
+            var responsive_steps02 = [
+                ['screen and (max-width: 768px)', {
+                    height: 240,
+                    chartPadding: 25
+                }]
+            ];
+
+            // Initialize a Bar chart in the container with the ID chart01
+            new Chartist.Bar('#chart01', data01, options01, responsive_steps01)
+                .on('draw', function(data001) {
+                    if (data001.type === 'bar') {
+                        data001.element.attr({
+                            style: 'stroke-width: 6px;'
+                        });
+                    }
+                });
+
+            // Initialize a Pie chart in the container with the ID chart02
+            new Chartist.Pie('#chart02', data02, options02, responsive_steps02);
+            */
+
+        }); // docready END
+
+        // Apply necessary changes, functionality when content is loaded
+        $(window).on('load', function() {
+
+            // This script is necessary for cross browsers icon sprite support (IE9+, ...) 
+            svg4everybody();
+
+            // "Timeout" function is not neccessary - important is to hide the preloader overlay
+            setTimeout(function() {
+
+                // Hide preloader overlay when content is loaded
+                $('#iot-preloader,.card-preloader').fadeOut();
+                $("#wrapper").removeClass("hidden");
+
+                /*
+                // Initialize range sliders
+                $('input[type="range"]').rangeslider({
+                    polyfill: false,
+                    onSlideEnd: function(position, value) {
+
+                        var rangeValues = JSON.parse(localStorage.getItem('rangeValues')) || {};
+                        // Update localStorage
+                        if (localStorage) {
+                            rangeValues[this.$element[0].id] = value;
+                            localStorage.setItem("rangeValues", JSON.stringify(rangeValues));
+                        }
+                    }
+
+                });
+                */
+
+                // Check for Main contents scrollbar visibility and set right position for FAB button
+                iot.positionFab();
+
+            }, 1500);
+
+        });
+
+        // Apply necessary changes if window resized
+        $(window).on('resize', function() {
+
+            // Modal reposition when the window is resized
+            $('.modal.centered:visible').each(iot.centerModal);
+
+            // Check for Main contents scrollbar visibility and set right position for FAB button
+            iot.positionFab();
+        });
+    </script>
+
+</body>
+
+</html>
